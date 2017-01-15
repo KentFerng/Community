@@ -1,0 +1,575 @@
+<!DOCTYPE HTML>
+<html  style="overflow:hidden;">
+<head>
+<title>新天地社區</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="index_files/mbcsmbmcp.css" type="text/css" />
+
+<script src="jquery/jquery-3.1.0.min.js"></script>
+
+
+<link href = "jquery-ui-1.12.1/jquery-ui.css" rel = "stylesheet">
+<script src = "jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="login_files/formoid1/formoid-solid-blue.css" type="text/css" />
+
+
+<style>
+
+	.cover {
+		position: absolute;
+		border: none;
+		top: 0;
+		left: 0;
+		width: 100%;
+		z-index: -2;
+		height: 100%;
+	}
+
+	#leftFrame {
+		float: left;
+		width: 0px;
+		border: 0px;
+	}
+	#rightFrame {
+		width: 100%;
+		border: 0px;
+	}
+    
+    .ui-dialog .ui-dialog-content {
+        padding: 0;
+    }
+
+</style>
+
+</head>
+
+<!-- 區大會議記錄 -->
+<script type="text/javascript" language="javascript" src="JsonData/CommunityMeetings.json"></script> 
+
+<!-- 社區規約 -->
+<script type="text/javascript" language="javascript" src="JsonData/CommunityRules.json"></script>
+
+<!-- 管委會開會紀錄 -->
+<script type="text/javascript" language="javascript" src="JsonData/CommitteeMeetings.json"></script>
+
+<!-- 社區公告 -->
+<script type="text/javascript" language="javascript" src="JsonData/Announcements.json"></script>
+
+<!-- 財報 -->
+<script type="text/javascript" language="javascript" src="JsonData/Financial.json"></script>
+
+<!-- 文康活動 -->
+<script type="text/javascript" language="javascript" src="JsonData/Activities.json"></script>
+
+<!-- 廣告 -->
+<script type="text/javascript" language="javascript" src="JsonData/Advertisements.json"></script>
+
+<script type="text/javascript">
+
+function populateHtml(idName, jsonData)
+{
+	var len = jsonData.length;
+	var firstItem = true;
+	
+	var obj = document.getElementById(idName);
+
+	for (i = 0; i < len; i++) 
+	{
+	   var htmlString = "";
+	   
+	   var itemLabel = jsonData[i].itemLabel;
+	   if (itemLabel.replace(/\s/g,"") == ""){
+	       //empty
+		   htmlString += populateLinkLableItemsEx(jsonData[i].subItems, firstItem);
+	   }
+	   else
+	   {
+	       //not empty
+		   var subClause = jsonData[i].itemLabel + '</a>' + '<ul class="gradient_menu gradient123">' +
+		                   '<iframe class="cover" src="about:blank"></iframe>';
+
+		   if (firstItem)
+		   {   
+				htmlString += '<li ' + ' class="first_item"><a class="with_arrow"' + ' >' + subClause;
+			    firstItem = false;
+		   }
+		   else
+		   {
+				htmlString += '<li ' + '><a class="with_arrow"' + ' >' + subClause;
+		   }
+		   
+		   var subItemLength = jsonData[i].subItems.length;
+		   var lastItem = subItemLength-1;
+		   var itemPosFirst = true;
+		   
+		   htmlString += populateLinkLableItemsEx(jsonData[i].subItems, itemPosFirst);
+		   htmlString += '</ul></li>';
+	   }
+	   
+	   obj.innerHTML += htmlString;
+	}
+}
+
+function populateLinkLableItemsEx(arrayItem, itemPos)
+{
+    var htmlString = "";
+	
+	var subItemLength = arrayItem.length;
+	var lastItem = subItemLength-1;
+
+	for (var index = 0; index < subItemLength; index++)
+	{
+	   var dataParent = "";
+	   var dataAttrClass = "";
+	   if ( arrayItem[index].dataAttr )
+	   {
+	      dataAttrClass = 'data-attri="' + arrayItem[index].dataAttr + '"';
+		  dataParent = arrayItem[index].dataAttr;
+	   };
+	   
+	   if (itemPos)
+	   {
+		   if ( arrayItem[index].link )
+		   {
+				htmlString += '<li class="first_item"><a ' + dataAttrClass + ' href=' + 
+				arrayItem[index].link + ' target="rightIframe_content" onclick="return buildSideBarMenu(this);">' +
+				arrayItem[index].label + '</a></li>';
+		   }
+		   else
+		   {
+			   	var subClause = arrayItem[index].itemLabel + '</a>' + '<ul class="gradient_menu gradient123">' +
+							'<iframe class="cover" src="about:blank"></iframe>';
+
+				htmlString += '<li class="first_item"><a class="with_arrow ' + dataParent + '"' + ' title="">' + subClause;
+				var itemPosFirst = true;
+
+				htmlString += populateLinkLableItemsEx(arrayItem[index].subItems, itemPosFirst);
+				htmlString += '</ul></li>';
+		   }
+		   
+		   itemPos = false;
+	   }
+	   else
+	   {
+		   if ( arrayItem[index].link )
+		   {
+			   switch (index)
+			   { 
+				  case lastItem:
+					 htmlString += '<li class="last_item"><a ' + dataAttrClass + ' href=' + 
+					 arrayItem[index].link + ' target="rightIframe_content" onclick="return buildSideBarMenu(this);">' +
+					 arrayItem[index].label + '</a></li>';
+					 break;
+
+				  default:
+					 htmlString += '<li><a ' + dataAttrClass + ' href=' + 
+					 arrayItem[index].link + ' target="rightIframe_content" onclick="return buildSideBarMenu(this);">' +
+					 arrayItem[index].label + '</a></li>';
+					 break;
+			   }   
+		   }
+		   else
+		   {
+				var subClause = arrayItem[index].itemLabel + '</a>' + '<ul class="gradient_menu gradient123">' +
+								'<iframe class="cover" src="about:blank"></iframe>';
+
+				htmlString += '<li><a class="with_arrow ' + dataParent + '"' + ' title="">' + subClause;
+				var itemPosFirst = true;
+
+				htmlString += populateLinkLableItemsEx(arrayItem[index].subItems, itemPosFirst);
+				htmlString += '</ul></li>';
+		   }
+	   }
+   }
+   
+   return htmlString;
+}
+
+function populateSubItemMenu(currentSelectedItem, groupId, groupLabel, subItems)
+{
+	var strLi = "<li>";
+	
+	var groupIdString = '"group-' + groupId + '"';
+	var subGroupId = groupId * 100;
+	
+	strLi += '<input id=' + groupIdString + 'type="checkbox" hidden />';
+	strLi += '<label for=' + groupIdString + '><span class="fa fa-angle-right"></span>' + groupLabel  + '</label>';
+	strLi += '<ul class="group-list">';
+
+	for (var j=0; j < subItems.length; j++)
+	{
+		var subsubItems = $(subItems[j]).children('ul').children('li');
+		var subsubItemsLen = subsubItems.length;
+
+		if ( subsubItemsLen === 0 )
+		{
+			var strActive = "";
+			var href = $('a', $(subItems[j])).attr('href');
+			if (currentSelectedItem.href === href)
+			{
+				strActive = ' class="active"';
+				currentSelectedItem.Id = groupIdString.replace(/"/g, '');
+			}
+			
+			var href = $('a', subItems[j]).attr('href');
+			strLi += '<li>';
+			strLi += '<a href="' + '../' + href + '"  target="rightIframe_content" title=""' + strActive + ' onclick="toggleSelected(this)"' + '>' + $(subItems[j]).text() + '</a>';
+			strLi += '</li>';
+		}
+		else
+		{
+			strLi += '<li>';
+			var subGroupIdString = '"' + 'sub-group-' + subGroupId + '"';
+			subGroupId++;
+			strLi += '<input id=' + subGroupIdString + 'type="checkbox" hidden />';
+			strLi += '<label for=' + subGroupIdString + '><span class="fa fa-angle-right"></span>' + $('a', $(subItems[j])).first().text()  + '</label>';
+			strLi += '<ul class="sub-group-list">';
+			
+			for (var k=0; k < subsubItemsLen; k++)
+			{
+				var strActive = '';
+				var href = $('a', $(subsubItems[k])).attr('href');
+				if (currentSelectedItem.href === href)
+				{
+					strActive = ' class="active"';
+					currentSelectedItem.Id = subGroupIdString.replace(/"/g, '');
+				}
+
+				var href = $('a', subsubItems[k]).attr('href');
+				strLi += '<li>';
+				strLi += '<a href="' + '../' + href + '"  target="rightIframe_content" ' + strActive + ' onclick="toggleSelected(this)"' + '>' + $(subsubItems[k]).text() + '</a>';
+				strLi += '</li>';
+			}
+			
+			strLi += '</ul>';
+			strLi += '</li>';
+		}
+	}
+	
+	strLi += '</ul>';
+	strLi += "</li>";
+	
+	return strLi;
+}
+
+function buildLevelSublevelMenuItems(menuList, currentSelectedItem, countIndex)
+{
+	var strLi = "";
+	for (var i=0; i < menuList.length; i++)
+	{
+		var subItemLen = $(menuList[i]).children('ul').length;
+		if ( subItemLen > 0 ) 
+		{
+			countIndex.num++;
+			var itemText = $(menuList[i]).children('ul a').text(); 
+			var subItems = $(menuList[i]).children('ul').children('li')
+
+			strLi += populateSubItemMenu(currentSelectedItem, countIndex.num, itemText, subItems);
+			strGroupIdSelected = currentSelectedItem.Id;
+		}
+		else
+		{
+			strLi += "<li>";
+			var itemText = $(menuList[i]).text();
+			var href = $('a', menuList[i]).attr('href');
+			var strActive = "";
+			
+			if (currentSelectedItem.href === href)
+			{
+				strActive = ' class="active"';
+			}
+
+			strLi += '<a href="' + '../' + href + '"' + ' target="rightIframe_content" title=""' + strActive + ' onclick="toggleSelected(this)"' +'>';
+			strLi += $(menuList[i]).text();
+			strLi += '</a>';
+			strLi += '</label>';
+			strLi += "</li>";
+		}
+	}
+
+	return strLi;
+}
+
+function buildSideBarMenu(e) 
+{        
+   var attribute = e.getAttribute("data-attri");   
+   if (attribute)
+   {
+		var sideMenuBarTitle = $('#'+attribute).children().first().text();
+		var currentSelectedHref = $(e).attr('href');
+		var currentSelectedItem = {"href" : currentSelectedHref, "Id" : strGroupIdSelected};
+		var strGroupIdSelected = "";
+		
+		var strLi = "";
+		count = 0;
+		
+		if ( attribute.endsWith("_SubGroup") )
+		{
+			var grandParent = $('#'+attribute).children(".with_arrow").find('.with_arrow');
+			
+			if (grandParent.length > 0)
+			{
+				sideMenuBarTitle = $('#'+attribute).children().first().text();
+				
+				for (var i = 0; i < grandParent.length; i++)
+				{
+					count++;
+					var subItems = $(grandParent[i]).parent().children('li').children('li');
+					strLi += populateSubItemMenu(currentSelectedItem, count, $(grandParent[i]).text(), subItems);
+					strGroupIdSelected = currentSelectedItem.Id;
+				}
+			}
+			else
+			{
+				var sub = "_SubGroup";
+				attribute = attribute.slice(0, -(sub.length));
+				sideMenuBarTitle = $('#' + attribute).text();
+				
+				if ( attribute.endsWith("_Menu") )
+				{
+					var menu = "_Menu";
+					attribute = attribute.slice(0, -(menu.length));
+				}
+				
+				var arr = $('#' + attribute).children('li');
+				
+				var countIndex = {"num" : count};
+				strLi += buildLevelSublevelMenuItems(arr, currentSelectedItem, countIndex);
+				strGroupIdSelected = currentSelectedItem.Id;
+				count = countIndex.num;
+			}
+		}
+		else
+		{
+			sideMenuBarTitle = $('#'+attribute).children().first().text();
+			if ( (!sideMenuBarTitle) && (attribute.search("_Menu") < 0) )
+			{
+				sideMenuBarTitle = $('#' + attribute + '_Menu').text();
+			}
+			var arr = $(e).parent().parent().children("li");
+			var countIndex = {"num" : count};
+			strLi += buildLevelSublevelMenuItems(arr, currentSelectedItem, countIndex);
+			strGroupIdSelected = currentSelectedItem.Id;
+			count = countIndex.num;
+		}
+
+		var pass_data = {
+			'title' : sideMenuBarTitle,
+			'menuItemList' : strLi,
+			'strGroupIdSelected' : strGroupIdSelected
+		};
+		
+		var otherWindow = document.getElementById('leftFrame').contentWindow;
+		otherWindow.postMessage(JSON.stringify(pass_data), "*");
+
+		$('#leftFrame').width('20%');
+		$("#rightFrame").width('80%');
+   }
+   else
+   {
+		$('#leftFrame').width('0%');
+		$("#rightFrame").width('100%');;
+   }
+   
+   return true;       
+}
+
+function populateLinkLableItems(arrayItem, itemPos)
+{
+    var htmlString = "";
+	
+	var subItemLength = arrayItem.length;
+	var lastItem = subItemLength-1;
+
+	for (var index = 0; index < subItemLength; index++)
+	{
+	   if (itemPos.first)
+	   {
+			htmlString += '<li class="first_item"><a href=' + 
+			arrayItem[index].link + ' target="rightIframe_content" >' +
+			arrayItem[index].label + '</a></li>';
+			itemPos.first = false;
+	   }
+	   else
+	   {
+		   switch (index)
+		   { 
+			  case lastItem:
+				 htmlString += '<li class="last_item"><a href=' + 
+				 arrayItem[index].link + ' target="rightIframe_content" >' +
+				 arrayItem[index].label + '</a></li>';
+				 break;
+
+			  default:
+				 htmlString += '<li><a href=' + 
+				 arrayItem[index].link + ' target="rightIframe_content" >' +
+				 arrayItem[index].label + '</a></li>';
+				 break;
+		   }   
+	   
+	   }
+   }
+	return htmlString;
+}
+
+function printHtml()
+{
+    var test = $('html').html();
+    alert($('html').html());
+}
+
+$(function() {
+    $( "#dialog-1" ).dialog({
+       autoOpen: false,  
+       modal: true,
+       width: 400,
+    });
+});
+    
+function showModel()
+{
+    //document.getElementById("dialog-1").style.display="block";
+    //$( "#dialog-1" ).dialog( "open" );
+}
+
+
+</script>
+
+<body>
+
+<!-- Navigation menus created with the free version of Easy CSS Menu downloaded from www.easycssmenu.com
+     You are free to use this menu code for personal, non-commercial use only. Any other use is a serious violation of copyright laws.
+     You are required to retain this comment block in your website code in an unchanged fashion.
+     The above limitations do not apply on menus created with the paid version of the software. -->
+<div id="mbmcpebul_wrapper">
+  <ul id="mbmcpebul_table" class="mbmcpebul_menulist css_menu">
+  <li>
+  <div class="buttonbg gradient_button gradient57" style="width: 114px;">
+<!--  <a href="" onclick="printHtml()">新天地</a> -->
+<!--  <a href="">新天地</a> -->
+<!-- <a href="iframeHtml/Login/Login.html" onclick="return formoidbox(this);" target="_blank">新天地</a> -->
+
+
+<form id = "dialog-1" class="formoid-solid-blue" enctype='application/json' style="display:none ;background-color:#FFFFFF;font-size:14px;font-family:'Roboto',Arial,Helvetica,sans-serif;color:#34495E;max-width:480px;min-width:300px" method="post">
+	<div class="element-email">
+    <label class="title"><span class="required">*</span></label>
+    <div class="item-cont"><input class="large" type="email" name="email" value="" required="required" placeholder="Email"/><span class="icon-place"></span>
+    </div>
+    </div>
+	<div class="element-password">
+    <label class="title"><span class="required">*</span></label>
+    <div class="item-cont"><input class="large" type="password" name="password" value="" required="required" placeholder="Password"/><span class="icon-place"></span>
+    </div>
+    </div>
+    <div class="submit">
+    <input type="submit" value="Submit"/>
+    </div>
+</form>      
+
+<a onclick="return showModel();" >新天地</a> 
+
+  </div>
+  </li>
+  
+<!-- 社區規約 -->
+<li><div class="buttonbg gradient_button gradient57"><div class="arrow" id='CommunityRules_Menu'><a>社區規約</a></div></div>
+    <ul id = "CommunityRules" class="gradient_menu gradient820">
+	<iframe class="cover" src="about:blank"></iframe>
+	
+	<script type="text/javascript">
+	populateHtml("CommunityRules", JsonCommunityRules.CommunityRules);
+	</script>
+
+   </ul>
+</li>
+	
+<!-- 區大會議記錄 -->
+  <li><div class="buttonbg gradient_button gradient57" style="width: 213px;"><div class="arrow" id='CommunityMeetings'><a>區大會議記錄</a></div></div>
+    <ul id = "CommunityMeeting" class="gradient_menu gradient369">
+	<iframe class="cover" src="about:blank"></iframe>
+	
+	<script type="text/javascript">
+	var firstItem = {first: true};
+	document.getElementById("CommunityMeeting").innerHTML += populateLinkLableItemsEx(JsonCommunityMeetings.CommunityMeetings, firstItem);
+	
+	</script>
+	
+    </ul>
+</li>
+
+<!-- 管委會開會紀錄 -->
+<li><div class="buttonbg gradient_button gradient57" style="width: 241px;"><div class="arrow" id='CommitteeMeetings_Menu'><a>管委會開會紀錄</a></div></div>
+    <ul id = "CommitteeMeetings" class="gradient_menu gradient451">
+    <iframe class="cover" src="about:blank"></iframe>
+
+    <script type="text/javascript">
+	populateHtml("CommitteeMeetings", JsonCommitteeMeetings.CommitteeMeetings);
+	</script>
+	
+    </ul>
+</li>
+
+<!-- 社區公告 -->
+<li><div class="buttonbg gradient_button gradient57"><div class="arrow" id='Announcements_Menu'><a>社區公告</a></div></div>
+    <ul id = "Announcements" class="gradient_menu gradient451">
+    <iframe class="cover" src="about:blank"></iframe>
+
+	<script type="text/javascript">
+	populateHtml("Announcements", JsonAnnouncements.Announcements);
+	</script>
+
+    </ul>
+</li>
+
+<!-- 財報 -->
+<li><div class="buttonbg gradient_button gradient57" style="width: 101px;"><div class="arrow" id='Finances_Menu'><a>財報</a></div></div>
+    <ul id = "Finances" class="gradient_menu gradient492">
+    <iframe class="cover" src="about:blank"></iframe>
+	
+    <script type="text/javascript">
+	populateHtml("Finances", JsonFinancial.Financial);
+	</script>
+
+    </ul>
+</li>
+
+<!-- 文康活動 -->
+<li><div class="buttonbg gradient_button gradient57" style="width: 160px;"><div class="arrow" id='Activities_Menu'><a>文康活動</a></div></div>
+    <ul id = "Activities" class="gradient_menu gradient451">
+	<iframe class="cover" src="about:blank"></iframe>
+	
+	<script type="text/javascript">
+	populateHtml("Activities", JsonActivities.Activities);
+	</script>
+	
+    </ul>
+</li>
+
+<!-- 廣告 -->
+<li><div class="buttonbg gradient_button gradient57" style="width: 100px;"><div class="arrow" id='CommunityAds_Menu'><a>廣告</a></div></div>
+    <ul id = "Advertisement" class="gradient_menu gradient451">
+	<iframe class="cover" src="about:blank"></iframe>
+	
+	<script type="text/javascript">
+	populateHtml("Advertisement", JsonCommunityAds.CommunityAds);
+	</script>
+	
+    </ul>
+</li>
+ 
+</div>
+
+<!-- Menus will work without this javascript file. It is used only for extra
+     effects, improved usability, compatibility with very old web browsers
+     and support for touch screen devices. -->
+<script type="text/javascript" src="index_files/mbjsmbmcp.js"></script>
+
+<iframe id="leftFrame" src="iframeHtml/sideMenu.html" style='height:95vh;' name="iframe_sidebar" >
+</iframe>
+
+<iframe id="rightFrame" src="iframeHtml/rightIframeContent.html" style='height:95vh; background-image:url(index_files/新天地.png); background-size:100% 97%;background-repeat: no-repeat;' name="rightIframe_content" >
+</iframe>
+
+</body>
+</html>
